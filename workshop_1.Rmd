@@ -1,0 +1,82 @@
+
+---
+title: "Workshop 1"
+author: "Melissa Arévalo y Pablo Uribe"
+date: "2024-03-08"
+output: pdf_document
+---
+
+```{r setup, echo=FALSE, warning=FALSE}
+library(reticulate)
+Sys.setenv(RETICULATE_PYTHON = "c:\\Users\\DO IT WISER\\AppData\\Local\\Programs\\Python\\Python311")
+```
+
+```
+
+## R Markdown
+
+Importamos las librerias de python que vamos a utilizar
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+import seaborn as sns
+from scipy.stats import norm
+
+
+df = pd.read_csv(r"C:\Users\DO IT WISER\Documents\Personal\Monografía\Procesamiento R\processed_data.csv",index_col = 0)
+
+print(data.head())
+```
+
+```{python}
+
+# Lista de variables
+variables = ['NDVI', 'Precipitación', 'Evapotranspiración', 'Intercepción',
+       'Evapotranspiración_Potencial', 'Humedad_Suelo', 'Recarga']
+
+sns.set(style="darkgrid")
+fig, axes = plt.subplots(4, 2, figsize=(16, 20))  # Dos gráficos por fila
+bar_color = 'darkgray'
+
+for i, variable in enumerate(variables):
+    row = i // 2  # Dos gráficos por fila
+    col = i % 2
+    ax = axes[row, col]
+
+    # Calcular la media y la desviación estándar de la variable
+    mu, std = df[variable].mean(), df[variable].std()
+
+    # Crear un rango de valores para la curva de mejor ajuste
+    x_values = np.linspace(mu - 3 * std, mu + 3 * std, 100)
+
+    # Calcular la curva de densidad de probabilidad (PDF) utilizando una distribución normal
+    pdf = norm.pdf(x_values, mu, std)
+
+    # Trazar el histograma con más bines para una mejor representación
+    ax.hist(df[variable], bins=20, density=True, cumulative=False, color=bar_color)
+
+    # Trazar la curva de mejor ajuste
+    ax.plot(x_values, pdf, 'k-', lw=2, label='Ajuste Normal')
+
+    # Agregar la línea vertical para la media
+    ax.axvline(mu, color='r', linestyle='dashed', linewidth=2, label='Media')
+
+    # Agregar el valor de la media
+    ax.text(0.9, 0.5, f'Media:\n{mu:.2f}', transform=ax.transAxes, ha='center', va='center', color='black')
+
+    ax.set_title(f'Histograma de\n {variable}', y=1.01)
+    ax.set_xlabel(variable)
+    ax.set_ylabel('Frecuencia')
+    ax.legend()
+
+# Elimina cualquier eje no utilizado
+for i in range(len(variables), 4*2):
+    fig.delaxes(axes[i // 2, i % 2])
+
+plt.tight_layout()
+plt.show()
+
+
+```
