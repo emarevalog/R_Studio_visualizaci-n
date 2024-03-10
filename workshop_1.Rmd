@@ -3,6 +3,7 @@ title: "Workshop 1"
 author: "Melissa Arévalo y Pablo Uribe"
 date: "2024-03-08"
 output:
+  pdf_document: default
   html_document:
     df_print: paged
 ---
