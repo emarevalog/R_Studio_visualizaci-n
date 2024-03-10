@@ -1,82 +1,116 @@
-
 ---
 title: "Workshop 1"
 author: "Melissa Arévalo y Pablo Uribe"
 date: "2024-03-08"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
-```{r setup, echo=FALSE, warning=FALSE}
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(tinytex)
 library(reticulate)
-Sys.setenv(RETICULATE_PYTHON = "c:\\Users\\DO IT WISER\\AppData\\Local\\Programs\\Python\\Python311")
+library(knitr)
 ```
 
+```{python, include=FALSE}
+import pandas as pd
+
+df = pd.read_csv(r"C:\Users\DO IT WISER\Documents\Personal\Monografía\Procesamiento R\processed_data.csv")
+
+df_r = df.head()
+print(df_r)
 ```
 
-## R Markdown
+## Datos Estandarizados
 
-Importamos las librerias de python que vamos a utilizar
+```{r, echo=FALSE, include=TRUE, eval=TRUE}
+
+library(knitr)
+library(kableExtra)
+
+aux = py$df_r
+
+kable(aux, digits = 3) %>%
+  kable_styling(full_width = FALSE)
+```
 
 ```{python}
-import pandas as pd
+
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
+import numpy as np
 from scipy.stats import norm
 
 
-df = pd.read_csv(r"C:\Users\DO IT WISER\Documents\Personal\Monografía\Procesamiento R\processed_data.csv",index_col = 0)
+def values_density (columna):
+  x_values = np.linspace(columna.mean() - 3 * columna.std(), columna.mean() + 3 * columna.std(), 100)
+  pdf = norm.pdf(x_values, columna.mean(), columna.std())
+  
+  return x_values,pdf
 
-print(data.head())
+x_values_ndvi, pdf_ndvi = values_density(df['NDVI'])
+x_values_precipitacion, pdf_precipitacion = values_density(df['Precipitación'])
+
+fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+
+sns.histplot(df['NDVI'], bins=12, color='darkseagreen', ax=axs[0], edgecolor='black', alpha=0.7)
+axs[0].plot(x_values_ndvi, pdf_ndvi, 'k-', lw=2, label='Ajuste Normal')
+axs[0].set_title('NDVI')
+axs[0].legend() 
+
+sns.histplot(df['Precipitación'], bins=20, color='darkseagreen', ax=axs[1], edgecolor='black', alpha=0.7)
+axs[1].plot(x_values_precipitacion, pdf_precipitacion, 'k-', lw=2, label='Ajuste Normal')
+axs[1].set_title('Precipitación')
+axs[1].legend()  
+
+plt.tight_layout(w_pad=2)
+
+plt.show()
+
 ```
 
 ```{python}
+x_values_inter, pdf_inter = values_density(df['Intercepción'])
+x_values_evap, pdf_evap = values_density(df['Evapotranspiración'])
 
-# Lista de variables
-variables = ['NDVI', 'Precipitación', 'Evapotranspiración', 'Intercepción',
-       'Evapotranspiración_Potencial', 'Humedad_Suelo', 'Recarga']
+fig, axs = plt.subplots(1, 2, figsize=(8, 4))
 
-sns.set(style="darkgrid")
-fig, axes = plt.subplots(4, 2, figsize=(16, 20))  # Dos gráficos por fila
-bar_color = 'darkgray'
+sns.histplot(df['Intercepción'], bins=12, color='darkseagreen', ax=axs[0], edgecolor='black', alpha=0.7)
+axs[0].plot(x_values_inter, pdf_inter, 'k-', lw=2, label='Ajuste Normal')
+axs[0].set_title('Intercepción')
+axs[0].legend() 
 
-for i, variable in enumerate(variables):
-    row = i // 2  # Dos gráficos por fila
-    col = i % 2
-    ax = axes[row, col]
+sns.histplot(df['Evapotranspiración'], bins=20, color='darkseagreen', ax=axs[1], edgecolor='black', alpha=0.7)
+axs[1].plot(x_values_evap, pdf_evap, 'k-', lw=2, label='Ajuste Normal')
+axs[1].set_title('Evapotranspiración')
+axs[1].legend()  
 
-    # Calcular la media y la desviación estándar de la variable
-    mu, std = df[variable].mean(), df[variable].std()
+plt.tight_layout(w_pad=2)
 
-    # Crear un rango de valores para la curva de mejor ajuste
-    x_values = np.linspace(mu - 3 * std, mu + 3 * std, 100)
-
-    # Calcular la curva de densidad de probabilidad (PDF) utilizando una distribución normal
-    pdf = norm.pdf(x_values, mu, std)
-
-    # Trazar el histograma con más bines para una mejor representación
-    ax.hist(df[variable], bins=20, density=True, cumulative=False, color=bar_color)
-
-    # Trazar la curva de mejor ajuste
-    ax.plot(x_values, pdf, 'k-', lw=2, label='Ajuste Normal')
-
-    # Agregar la línea vertical para la media
-    ax.axvline(mu, color='r', linestyle='dashed', linewidth=2, label='Media')
-
-    # Agregar el valor de la media
-    ax.text(0.9, 0.5, f'Media:\n{mu:.2f}', transform=ax.transAxes, ha='center', va='center', color='black')
-
-    ax.set_title(f'Histograma de\n {variable}', y=1.01)
-    ax.set_xlabel(variable)
-    ax.set_ylabel('Frecuencia')
-    ax.legend()
-
-# Elimina cualquier eje no utilizado
-for i in range(len(variables), 4*2):
-    fig.delaxes(axes[i // 2, i % 2])
-
-plt.tight_layout()
 plt.show()
 
+```
+
+```{python}
+x_values_evapP, pdf_evapP = values_density(df['Evapotranspiración_Potencial'])
+x_values_Hum, pdf_Hum = values_density(df['Humedad_Suelo'])
+
+fig, axs = plt.subplots(1, 2, figsize=(8, 4))
+
+sns.histplot(df['Evapotranspiración_Potencial'], bins=12, color='darkseagreen', ax=axs[0], edgecolor='black', alpha=0.7)
+axs[0].plot(x_values_evapP, pdf_evapP, 'k-', lw=2, label='Ajuste Normal')
+axs[0].set_title('Evapotranspiración_Potencial')
+axs[0].legend() 
+
+sns.histplot(df['Humedad_Suelo'], bins=20, color='darkseagreen', ax=axs[1], edgecolor='black', alpha=0.7)
+axs[1].plot(x_values_Hum, pdf_Hum, 'k-', lw=2, label='Ajuste Normal')
+axs[1].set_title('Humedad_Suelo')
+axs[1].legend()  
+
+plt.tight_layout(w_pad=2)
+
+plt.show()
 
 ```
